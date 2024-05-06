@@ -1,7 +1,6 @@
 name: Bicep Template Analysis
 
 on:
-  push:
   pull_request:
     paths:
       - "templates/**"
@@ -21,6 +20,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Bicep Build
+        run: az bicep build templates/*.bicep --outfile built/
+
       - name: Run PSRule analysis
         uses: microsoft/ps-rule@v2.9.0
         with:
@@ -28,10 +30,10 @@ jobs:
           # baseline: Azure.Default
           outputFormat: Sarif
           outputPath: reports/ps-rule-results.sarif
-          inputPath: templates/
+          inputPath: built/
 
       - name: Upload results to security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: reports/ps-rule-results.sarif
 
