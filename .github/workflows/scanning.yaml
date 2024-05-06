@@ -25,7 +25,7 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az bicep build templates/sample.bicep --outfile built/sample.json 
+            az bicep build --file templates/sample.bicep --outfile built/sample.json 
 
       - name: Run PSRule analysis
         uses: microsoft/ps-rule@v2.9.0
