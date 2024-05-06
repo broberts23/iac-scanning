@@ -1,50 +1,30 @@
-name: Bicep Template Analysis
-
+name: Azure Bicep Template Analysis
 on:
   pull_request:
-    paths:
-      - "templates/**"
-    branches:
-      - main
-  workflow_dispatch:
-
+    branches: [main]
+  push:
+    branches: [/release/*]
 jobs:
-  analyze:
-    name: Analyze bicep resources
+  template-analysis:
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
-      actions: write
       security-events: write
     steps:
-      - name: Checkout
+      - name: Check out code
         uses: actions/checkout@v4
-
-      - name: Bicep Build
-        uses: azure/CLI@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az bicep build --file templates/sample.bicep --outfile sample.json 
-
-      - name: Run PSRule analysis
-        uses: microsoft/ps-rule@v2.9.0
-        with:
-          modules: "PSRule.Rules.Azure, PSRule.Rules.CAF"
-          # baseline: Azure.Default
-          outputFormat: Sarif
-          outputPath: reports/ps-rule-results.sarif
-          inputPath: sample.json
-
-      - name: Upload results to security tab
+      - name: Install Template Analyzer
+        run: |
+          wget https://github.com/Azure/template-analyzer/releases/download/v0.7.0/TemplateAnalyzer-linux-x64.zip
+          unzip TemplateAnalyzer-linux-x64.zip -d targetfolder/
+          chmod +x ./targetfolder/TemplateAnalyzer
+      - name: Run Template Analyzer
+        run: |
+          ./targetfolder/TemplateAnalyzer analyze-directory ./templates --report-format sarif -o analysis-results.sarif
+          cat analysis-results.sarif
+      - name: Upload SARIF file to GitHub
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: reports/ps-rule-results.sarif
-
-      # - name: Publish Test Results
-      #   uses: EnricoMi/publish-unit-test-result-action/linux@v2
-      #   if: always()
-      #   with:
-      #     job_summary: true
-      #     files: |
-      #       reports/analysis-results.xml
+          sarif_file: analysis-results.sarif
