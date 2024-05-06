@@ -4,17 +4,21 @@ on:
     branches: [main]
   push:
     branches: [/release/*]
+
 jobs:
-  checkov-job:
+  checkov-scan:
     runs-on: ubuntu-latest
     name: checkov-action
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
     steps:
       - name: Checkout repo
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
 
       - name: Run Checkov action
         id: checkov
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v12
         with:
           directory: templates/
           # check: CKV_AWS_1 # optional: run only a specific check_id. can be comma separated list
@@ -23,6 +27,7 @@ jobs:
           soft_fail: true # optional: do not return an error code if there are failed checks
           framework: bicep # optional: run only on a specific infrastructure {cloudformation,terraform,kubernetes,all}
           output_format: sarif # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. Default: sarif
+          output_file_path: results.sarif
           download_external_modules: true # optional: download external terraform modules from public git repositories and terraform registry
           # log_level: DEBUG # optional: set log level. Default WARNING
           # config_file: path/this_file
@@ -33,4 +38,4 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: analysis-results.sarif
+          sarif_file: results.sarif
