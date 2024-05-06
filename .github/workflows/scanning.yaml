@@ -18,6 +18,7 @@ jobs:
       run: |
         wget https://github.com/Azure/template-analyzer/releases/download/v0.7.0/TemplateAnalyzer-linux-x64.zip
         unzip TemplateAnalyzer-linux-x64.zip -d targetfolder/
+        chmod +x ./targetfolder/TemplateAnalyzer
 
     - name: Run Template Analyzer
       run: ./targetfolder/TemplateAnalyzer analyze-directory -t ./templates --output-format sarif > analysis-results.sarif
