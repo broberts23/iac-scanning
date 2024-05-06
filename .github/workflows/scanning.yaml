@@ -5,24 +5,30 @@ on:
   push:
     branches: [/release/*]
 jobs:
-  template-analysis:
+  checkov-job:
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
+    name: checkov-action
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Install Template Analyzer
-        run: |
-          wget https://github.com/Azure/template-analyzer/releases/download/v0.7.0/TemplateAnalyzer-linux-x64.zip
-          unzip TemplateAnalyzer-linux-x64.zip -d targetfolder/
-          chmod +x ./targetfolder/TemplateAnalyzer
-      - name: Run Template Analyzer
-        run: |
-          ./targetfolder/TemplateAnalyzer analyze-directory ./templates --report-format sarif -o analysis-results.sarif
-          cat analysis-results.sarif
+      - name: Checkout repo
+        uses: actions/checkout@master
+
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: templates/
+          # check: CKV_AWS_1 # optional: run only a specific check_id. can be comma separated list
+          # skip_check: CKV_AWS_2 # optional: skip a specific check_id. can be comma separated list
+          quiet: true # optional: display only failed checks
+          soft_fail: true # optional: do not return an error code if there are failed checks
+          framework: bicep # optional: run only on a specific infrastructure {cloudformation,terraform,kubernetes,all}
+          output_format: sarif # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. Default: sarif
+          download_external_modules: true # optional: download external terraform modules from public git repositories and terraform registry
+          # log_level: DEBUG # optional: set log level. Default WARNING
+          # config_file: path/this_file
+          # baseline: cloudformation/.checkov.baseline # optional: Path to a generated baseline file. Will only report results not in the baseline.
+          # container_user: 1000 # optional: Define what UID and / or what GID to run the container under to prevent permission issues
+
       - name: Upload SARIF file to GitHub
         if: always()
         uses: github/codeql-action/upload-sarif@v3
