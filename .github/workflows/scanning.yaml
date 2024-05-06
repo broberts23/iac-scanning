@@ -20,11 +20,11 @@ jobs:
       - name: Run PSRule analysis
         uses: microsoft/ps-rule@v2.9.0
         with:
-          modules: PSRule.Rules.Azure
+          modules: 'PSRule.Rules.Azure, PSRule.Rules.CAF'
           baseline: Azure.Default
           outputFormat: NUnit3
           outputPath: reports/analysis-results.xml
-          inputPath: templates/*.bicep
+          # inputPath: templates/*.bicep
 
       # Publish PSRule outputs as test results
       - name: Publish Test Results
