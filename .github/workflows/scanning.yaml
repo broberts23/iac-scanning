@@ -24,17 +24,21 @@ jobs:
       - name: Run PSRule analysis
         uses: microsoft/ps-rule@v2.9.0
         with:
-          modules: 'PSRule.Rules.Azure, PSRule.Rules.CAF'
+          modules: "PSRule.Rules.Azure, PSRule.Rules.CAF"
           # baseline: Azure.Default
-          outputFormat: NUnit3
-          outputPath: reports/analysis-results.xml
-          inputPath: templates/*.bicep
+          outputFormat: Sarif
+          outputPath: reports/ps-rule-results.sarif
+          inputPath: templates/
 
-      # Publish PSRule outputs as test results
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action/linux@v2
-        if: always()
+      - name: Upload results to security tab
+        uses: github/codeql-action/upload-sarif@v2
         with:
-          job_summary: true
-          files: |
-            reports/analysis-results.xml
+          sarif_file: reports/ps-rule-results.sarif
+
+      # - name: Publish Test Results
+      #   uses: EnricoMi/publish-unit-test-result-action/linux@v2
+      #   if: always()
+      #   with:
+      #     job_summary: true
+      #     files: |
+      #       reports/analysis-results.xml
