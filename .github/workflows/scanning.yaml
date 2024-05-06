@@ -20,7 +20,7 @@ jobs:
         unzip TemplateAnalyzer-linux-x64.zip
 
     - name: Run Template Analyzer
-      run: TemplateAnalyzer.exe analyze-directory -t ./templates --output-format sarif > analysis-results.sarif
+      run: TemplateAnalyzer analyze-directory -t ./templates --output-format sarif > analysis-results.sarif
 
     - name: Upload SARIF file to GitHub
       uses: github/codeql-action/upload-sarif@v1
