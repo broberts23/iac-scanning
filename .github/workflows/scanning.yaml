@@ -25,7 +25,7 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az bicep build --file templates/sample.bicep --outfile built/sample.json 
+            az bicep build --file templates/sample.bicep --outfile sample.json 
 
       - name: Run PSRule analysis
         uses: microsoft/ps-rule@v2.9.0
@@ -34,7 +34,7 @@ jobs:
           # baseline: Azure.Default
           outputFormat: Sarif
           outputPath: reports/ps-rule-results.sarif
-          inputPath: built/
+          inputPath: sample.json
 
       - name: Upload results to security tab
         uses: github/codeql-action/upload-sarif@v3
