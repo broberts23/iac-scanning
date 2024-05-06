@@ -17,12 +17,12 @@ jobs:
     - name: Install Template Analyzer
       run: |
         wget https://github.com/Azure/template-analyzer/releases/download/v0.7.0/TemplateAnalyzer-linux-x64.zip
-        unzip TemplateAnalyzer-linux-x64.zip
+        unzip TemplateAnalyzer-linux-x64.zip -d targetfolder/
 
     - name: Run Template Analyzer
-      run: TemplateAnalyzer analyze-directory -t ./templates --output-format sarif > analysis-results.sarif
+      run: ./targetfolder/TemplateAnalyzer analyze-directory -t ./templates --output-format sarif > analysis-results.sarif
 
     - name: Upload SARIF file to GitHub
-      uses: github/codeql-action/upload-sarif@v1
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: analysis-results.sarif
