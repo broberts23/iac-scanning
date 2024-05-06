@@ -1,34 +1,36 @@
-name: Azure Bicep Template Analysis
+name: Bicep Template Analysis
 
 on:
-  pull_request:
-    branches: [ main ]
   push:
-    branches: [ /release/* ]
+  pull_request:
+    paths:
+      - "templates/**"
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  template-analysis:
+  analyze:
+    name: Analyze bicep resources
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
     steps:
-    - name: Check out code
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install Template Analyzer
-      run: |
-        wget https://github.com/Azure/template-analyzer/releases/download/v0.7.0/TemplateAnalyzer-linux-x64.zip
-        unzip TemplateAnalyzer-linux-x64.zip -d targetfolder/
-        chmod +x ./targetfolder/TemplateAnalyzer
+      - name: Run PSRule analysis
+        uses: microsoft/ps-rule@v2.9.0
+        with:
+          modules: PSRule.Rules.Azure
+          baseline: Azure.Default
+          outputFormat: NUnit3
+          outputPath: reports/analysis-results.xml
+          inputPath: templates/*.bicep
 
-    - name: Run Template Analyzer
-      run: |
-        ./targetfolder/TemplateAnalyzer analyze-directory ./templates --report-format sarif -o analysis-results.sarif --verbose
-
-    - name: Upload SARIF file to GitHub
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: analysis-results.sarif
+      # Publish PSRule outputs as test results
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        if: always()
+        with:
+          job_summary: true
+          files: |
+            reports/analysis-results.xml
