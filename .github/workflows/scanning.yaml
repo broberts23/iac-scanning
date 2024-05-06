@@ -25,7 +25,10 @@ jobs:
         chmod +x ./targetfolder/TemplateAnalyzer
 
     - name: Run Template Analyzer
-      run: ./targetfolder/TemplateAnalyzer analyze-directory ./templates --report-format sarif -o analysis-results.sarif
+      run: |
+        ./targetfolder/TemplateAnalyzer analyze-directory ./templates --report-format sarif -o analysis-results.sarif
+        cat analysis-results.sarif
+
 
     - name: Upload SARIF file to GitHub
       uses: github/codeql-action/upload-sarif@v3
