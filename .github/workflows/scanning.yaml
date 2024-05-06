@@ -1,0 +1,28 @@
+name: Azure Bicep Template Analysis
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ /release*/ ]
+
+jobs:
+  template-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Install Template Analyzer
+      run: |
+        wget https://github.com/Azure/template-analyzer/releases/download/v0.7.0/template-analyzer_0.7.0_linux_amd64.tar.gz
+        tar -xvzf template-analyzer_0.7.0_linux_amd64.tar.gz
+
+    - name: Run Template Analyzer
+      run: ./template-analyzer analyze-template -t ./templates --output-format sarif > analysis-results.sarif
+
+    - name: Upload SARIF file to GitHub
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: analysis-results.sarif
